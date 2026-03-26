@@ -19,6 +19,8 @@ interface CartContextType {
   updateAddress: (address: Address) => void;
   userProfile: UserProfile | null;
   updateUserProfile: (profile: UserProfile) => void;
+  login: (email: string, password: string) => boolean;
+  signup: (profile: UserProfile, password: string) => boolean;
   logout: () => void;
   wishlist: string[];
   toggleWishlist: (id: string) => void;
@@ -50,43 +52,50 @@ const COUPONS: Coupon[] = [
 ];
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(() => {
+    const saved = localStorage.getItem('lumina_current_user');
+    return saved ? JSON.parse(saved) : null;
+  });
+
   const [cart, setCart] = useState<CartItem[]>(() => {
-    const saved = localStorage.getItem('lumina_cart');
+    const userId = userProfile?.id || 'guest';
+    const saved = localStorage.getItem(`lumina_cart_${userId}`);
     return saved ? JSON.parse(saved) : [];
   });
 
   const [preferences, setPreferences] = useState<UserPreferences>(() => {
-    const saved = localStorage.getItem('lumina_prefs');
+    const userId = userProfile?.id || 'guest';
+    const saved = localStorage.getItem(`lumina_prefs_${userId}`);
     return saved ? JSON.parse(saved) : DEFAULT_PREFERENCES;
   });
 
   const [orders, setOrders] = useState<Order[]>(() => {
-    const saved = localStorage.getItem('lumina_orders');
+    const userId = userProfile?.id || 'guest';
+    const saved = localStorage.getItem(`lumina_orders_${userId}`);
     return saved ? JSON.parse(saved) : [];
   });
 
   const [addresses, setAddresses] = useState<Address[]>(() => {
-    const saved = localStorage.getItem('lumina_addresses');
+    const userId = userProfile?.id || 'guest';
+    const saved = localStorage.getItem(`lumina_addresses_${userId}`);
     return saved ? JSON.parse(saved) : [];
   });
 
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(() => {
-    const saved = localStorage.getItem('lumina_profile');
-    return saved ? JSON.parse(saved) : null;
-  });
-
   const [wishlist, setWishlist] = useState<string[]>(() => {
-    const saved = localStorage.getItem('lumina_wishlist');
+    const userId = userProfile?.id || 'guest';
+    const saved = localStorage.getItem(`lumina_wishlist_${userId}`);
     return saved ? JSON.parse(saved) : [];
   });
 
   const [recentlyViewed, setRecentlyViewed] = useState<string[]>(() => {
-    const saved = localStorage.getItem('lumina_recent');
+    const userId = userProfile?.id || 'guest';
+    const saved = localStorage.getItem(`lumina_recent_${userId}`);
     return saved ? JSON.parse(saved) : [];
   });
 
   const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(() => {
-    const saved = localStorage.getItem('lumina_coupon');
+    const userId = userProfile?.id || 'guest';
+    const saved = localStorage.getItem(`lumina_coupon_${userId}`);
     return saved ? JSON.parse(saved) : null;
   });
 
@@ -109,43 +118,76 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
-    localStorage.setItem('lumina_cart', JSON.stringify(cart));
-  }, [cart]);
+    const userId = userProfile?.id || 'guest';
+    const savedCart = localStorage.getItem(`lumina_cart_${userId}`);
+    const savedPrefs = localStorage.getItem(`lumina_prefs_${userId}`);
+    const savedOrders = localStorage.getItem(`lumina_orders_${userId}`);
+    const savedAddresses = localStorage.getItem(`lumina_addresses_${userId}`);
+    const savedWishlist = localStorage.getItem(`lumina_wishlist_${userId}`);
+    const savedRecent = localStorage.getItem(`lumina_recent_${userId}`);
+    const savedCoupon = localStorage.getItem(`lumina_coupon_${userId}`);
+
+    setCart(savedCart ? JSON.parse(savedCart) : []);
+    setPreferences(savedPrefs ? JSON.parse(savedPrefs) : DEFAULT_PREFERENCES);
+    setOrders(savedOrders ? JSON.parse(savedOrders) : []);
+    setAddresses(savedAddresses ? JSON.parse(savedAddresses) : []);
+    setWishlist(savedWishlist ? JSON.parse(savedWishlist) : []);
+    setRecentlyViewed(savedRecent ? JSON.parse(savedRecent) : []);
+    setAppliedCoupon(savedCoupon ? JSON.parse(savedCoupon) : null);
+  }, [userProfile?.id]);
 
   useEffect(() => {
-    localStorage.setItem('lumina_prefs', JSON.stringify(preferences));
+    const userId = userProfile?.id || 'guest';
+    localStorage.setItem(`lumina_cart_${userId}`, JSON.stringify(cart));
+  }, [cart, userProfile?.id]);
+
+  useEffect(() => {
+    const userId = userProfile?.id || 'guest';
+    localStorage.setItem(`lumina_prefs_${userId}`, JSON.stringify(preferences));
     if (preferences.theme === 'dark') {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
     }
-  }, [preferences]);
+  }, [preferences, userProfile?.id]);
 
   useEffect(() => {
-    localStorage.setItem('lumina_orders', JSON.stringify(orders));
-  }, [orders]);
+    const userId = userProfile?.id || 'guest';
+    localStorage.setItem(`lumina_orders_${userId}`, JSON.stringify(orders));
+  }, [orders, userProfile?.id]);
 
   useEffect(() => {
-    localStorage.setItem('lumina_addresses', JSON.stringify(addresses));
-  }, [addresses]);
+    const userId = userProfile?.id || 'guest';
+    localStorage.setItem(`lumina_addresses_${userId}`, JSON.stringify(addresses));
+  }, [addresses, userProfile?.id]);
 
   useEffect(() => {
     if (userProfile) {
-      localStorage.setItem('lumina_profile', JSON.stringify(userProfile));
+      localStorage.setItem('lumina_current_user', JSON.stringify(userProfile));
+      // Also update the users list
+      const savedUsers = localStorage.getItem('lumina_users');
+      const users = savedUsers ? JSON.parse(savedUsers) : [];
+      const updatedUsers = users.map((u: any) => u.profile.id === userProfile.id ? { ...u, profile: userProfile } : u);
+      localStorage.setItem('lumina_users', JSON.stringify(updatedUsers));
+    } else {
+      localStorage.removeItem('lumina_current_user');
     }
   }, [userProfile]);
 
   useEffect(() => {
-    localStorage.setItem('lumina_wishlist', JSON.stringify(wishlist));
-  }, [wishlist]);
+    const userId = userProfile?.id || 'guest';
+    localStorage.setItem(`lumina_wishlist_${userId}`, JSON.stringify(wishlist));
+  }, [wishlist, userProfile?.id]);
 
   useEffect(() => {
-    localStorage.setItem('lumina_recent', JSON.stringify(recentlyViewed));
-  }, [recentlyViewed]);
+    const userId = userProfile?.id || 'guest';
+    localStorage.setItem(`lumina_recent_${userId}`, JSON.stringify(recentlyViewed));
+  }, [recentlyViewed, userProfile?.id]);
 
   useEffect(() => {
-    localStorage.setItem('lumina_coupon', JSON.stringify(appliedCoupon));
-  }, [appliedCoupon]);
+    const userId = userProfile?.id || 'guest';
+    localStorage.setItem(`lumina_coupon_${userId}`, JSON.stringify(appliedCoupon));
+  }, [appliedCoupon, userProfile?.id]);
 
   const addToCart = (item: CartItem) => {
     setCart((prev) => {
@@ -201,14 +243,40 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUserProfile(profile);
   };
 
+  const login = (email: string, password: string) => {
+    const savedUsers = localStorage.getItem('lumina_users');
+    const users = savedUsers ? JSON.parse(savedUsers) : [];
+    const user = users.find((u: any) => u.profile.email === email && u.password === password);
+    
+    if (user) {
+      setUserProfile(user.profile);
+      return true;
+    }
+    return false;
+  };
+
+  const signup = (profile: UserProfile, password: string) => {
+    const savedUsers = localStorage.getItem('lumina_users');
+    const users = savedUsers ? JSON.parse(savedUsers) : [];
+    
+    if (users.find((u: any) => u.profile.email === profile.email)) {
+      return false;
+    }
+
+    const newUser = { profile, password };
+    localStorage.setItem('lumina_users', JSON.stringify([...users, newUser]));
+    setUserProfile(profile);
+    return true;
+  };
+
   const logout = () => {
     setUserProfile(null);
+    setCart([]);
     setOrders([]);
     setAddresses([]);
     setWishlist([]);
     setRecentlyViewed([]);
     setAppliedCoupon(null);
-    localStorage.clear();
     window.location.href = '/';
   };
 
@@ -259,6 +327,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         updateAddress,
         userProfile,
         updateUserProfile,
+        login,
+        signup,
         logout,
         wishlist,
         toggleWishlist,

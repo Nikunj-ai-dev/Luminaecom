@@ -17,8 +17,7 @@ import {
   Phone,
   Calendar,
   Save,
-  LogOut,
-  Sparkles
+  LogOut
 } from 'lucide-react';
 import { useCart } from '../CartContext';
 import { formatPrice } from '../lib/utils';
@@ -42,24 +41,8 @@ export const Profile: React.FC = () => {
     joinedDate: new Date().toLocaleDateString()
   });
 
-  const generateDemoData = () => {
-    const demoProfile: UserProfile = {
-      name: 'Jane Lumina',
-      email: 'jane.lumina@demo.com',
-      phone: '+1 (555) 123-4567',
-      bio: 'Lover of minimalist design and sustainable living. Always looking for the perfect lamp to brighten my reading nook.',
-      joinedDate: new Date().toLocaleDateString()
-    };
-    setProfileForm(demoProfile);
-    updateUserProfile(demoProfile);
-    setIsEditingProfile(false);
-  };
-
   const handleLogout = () => {
-    if (window.confirm('Are you sure you want to logout? This will clear all demo data including orders and addresses.')) {
-      logout();
-      window.location.href = '/';
-    }
+    logout();
   };
 
   const handleAddAddress = (formData: Omit<Address, 'id'>) => {
@@ -293,16 +276,6 @@ export const Profile: React.FC = () => {
                       <Save className="w-4 h-4" />
                       Save Profile
                     </button>
-                    {!userProfile && (
-                      <button
-                        type="button"
-                        onClick={generateDemoData}
-                        className="flex-1 bg-stone-100 dark:bg-stone-800 text-stone-900 dark:text-white py-4 rounded-xl font-bold hover:bg-stone-200 dark:hover:bg-stone-700 transition-all flex items-center justify-center gap-2"
-                      >
-                        <Sparkles className="w-4 h-4" />
-                        Demo Data
-                      </button>
-                    )}
                     {userProfile && (
                       <button
                         type="button"

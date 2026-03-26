@@ -68,13 +68,22 @@ export const Navbar: React.FC = () => {
                 </span>
               )}
             </Link>
-            <Link to="/profile" className="flex items-center gap-2 p-2 text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white transition-colors">
-              <User className="w-5 h-5" />
-              {userProfile && (
-                <span className="hidden lg:block text-xs font-bold uppercase tracking-widest">
-                  {userProfile.name.split(' ')[0]}
-                </span>
+            <Link 
+              to={userProfile ? "/profile" : "/auth"} 
+              className="flex items-center gap-2 p-2 text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white transition-colors group"
+            >
+              {userProfile?.avatar ? (
+                <img 
+                  src={userProfile.avatar} 
+                  alt={userProfile.name} 
+                  className="w-6 h-6 rounded-full border border-stone-200 dark:border-stone-800 group-hover:border-stone-900 dark:group-hover:border-white transition-colors"
+                />
+              ) : (
+                <User className="w-5 h-5" />
               )}
+              <span className="hidden lg:block text-xs font-bold uppercase tracking-widest">
+                {userProfile ? userProfile.name.split(' ')[0] : 'Sign In'}
+              </span>
             </Link>
             <button 
               onClick={() => setIsCartOpen(true)}
