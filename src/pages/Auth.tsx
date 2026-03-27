@@ -168,6 +168,20 @@ export const Auth: React.FC = () => {
             </button>
           </form>
 
+          <div className="mt-8 pt-8 border-t border-stone-50 dark:border-stone-800">
+            <p className="text-[10px] uppercase tracking-widest font-bold text-stone-400 mb-6 text-center">Or continue with</p>
+            <div className="grid grid-cols-2 gap-4">
+              <button className="flex items-center justify-center gap-2 py-3.5 rounded-2xl border border-stone-100 dark:border-stone-800 hover:bg-stone-50 dark:hover:bg-stone-800 transition-all active:scale-95 group">
+                <img src="https://www.google.com/favicon.ico" className="w-4 h-4 grayscale group-hover:grayscale-0 transition-all" alt="Google" />
+                <span className="text-xs font-bold text-stone-600 dark:text-stone-400">Google</span>
+              </button>
+              <button className="flex items-center justify-center gap-2 py-3.5 rounded-2xl border border-stone-100 dark:border-stone-800 hover:bg-stone-50 dark:hover:bg-stone-800 transition-all active:scale-95 group">
+                <img src="https://github.com/favicon.ico" className="w-4 h-4 grayscale group-hover:grayscale-0 transition-all" alt="GitHub" />
+                <span className="text-xs font-bold text-stone-600 dark:text-stone-400">GitHub</span>
+              </button>
+            </div>
+          </div>
+
           <div className="mt-8 pt-8 border-t border-stone-50 dark:border-stone-800 text-center">
             <p className="text-sm text-stone-500 dark:text-stone-400">
               {isLogin ? "Don't have an account?" : "Already have an account?"}

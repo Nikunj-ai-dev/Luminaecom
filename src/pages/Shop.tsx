@@ -4,6 +4,7 @@ import { Filter, X, ChevronDown, SlidersHorizontal, Search, Star, RotateCcw } fr
 import * as Slider from '@radix-ui/react-slider';
 import { PRODUCTS, CATEGORIES } from '../data';
 import { ProductCard, ProductSkeleton } from '../components/ProductCard';
+import { QuickView } from '../components/QuickView';
 import { useCart } from '../CartContext';
 import { Toast } from '../components/Toast';
 import { Product } from '../types';
@@ -43,6 +44,7 @@ export const Shop: React.FC = () => {
   const [showToast, setShowToast] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 800);
@@ -300,6 +302,7 @@ export const Shop: React.FC = () => {
                         key={product.id} 
                         product={product} 
                         onAddToCart={() => setShowToast(true)}
+                        onQuickView={(p) => setSelectedProduct(p)}
                       />
                     ))}
                   </AnimatePresence>
@@ -456,6 +459,12 @@ export const Shop: React.FC = () => {
           </>
         )}
       </AnimatePresence>
+
+      <QuickView 
+        product={selectedProduct} 
+        onClose={() => setSelectedProduct(null)} 
+        onAddToCart={() => setShowToast(true)}
+      />
 
       <Toast 
         message="Added to cart successfully!" 

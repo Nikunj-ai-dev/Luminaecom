@@ -8,6 +8,9 @@ import { useCart } from '../CartContext';
 import { Toast } from '../components/Toast';
 import { ProductReview } from '../types';
 
+import { ProductCard } from '../components/ProductCard';
+import { QuickView } from '../components/QuickView';
+
 export const ProductDetail: React.FC = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -18,6 +21,7 @@ export const ProductDetail: React.FC = () => {
   const [isZoomed, setIsZoomed] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [selectedImage, setSelectedImage] = useState(0);
+  const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
 
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState('');
@@ -40,6 +44,13 @@ export const ProductDetail: React.FC = () => {
   }, [allReviews, product]);
 
   const reviewsCount = allReviews.length;
+
+  const relatedProducts = useMemo(() => {
+    if (!product) return [];
+    return PRODUCTS
+      .filter(p => p.category === product.category && p.id !== product.id)
+      .slice(0, 4);
+  }, [product]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -456,6 +467,38 @@ export const ProductDetail: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Related Products */}
+      {relatedProducts.length > 0 && (
+        <div className="mt-32 pt-32 border-t border-stone-100 dark:border-stone-900">
+          <div className="flex flex-col md:flex-row justify-between items-end gap-6 mb-16">
+            <div className="max-w-xl">
+              <h2 className="text-4xl md:text-5xl font-serif italic mb-4 dark:text-white">You May Also <span className="text-stone-400">Like</span></h2>
+              <p className="text-stone-500 dark:text-stone-400">Carefully curated pieces that complement your selection.</p>
+            </div>
+            <Link to="/shop" className="text-sm font-bold uppercase tracking-widest pb-2 border-b-2 border-stone-900 dark:border-white dark:text-white">
+              View All Shop
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
+            {relatedProducts.map((p) => (
+              <ProductCard 
+                key={p.id} 
+                product={p} 
+                onAddToCart={() => setShowToast(true)}
+                onQuickView={(prod) => setSelectedProduct(prod)}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      <QuickView 
+        product={selectedProduct} 
+        onClose={() => setSelectedProduct(null)} 
+        onAddToCart={() => setShowToast(true)}
+      />
 
       <Toast 
         message="Added to cart successfully!" 

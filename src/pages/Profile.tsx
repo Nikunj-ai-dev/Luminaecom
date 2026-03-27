@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Package, 
@@ -17,21 +17,28 @@ import {
   Phone,
   Calendar,
   Save,
-  LogOut
+  LogOut,
+  Heart
 } from 'lucide-react';
 import { useCart } from '../CartContext';
 import { formatPrice } from '../lib/utils';
-import { Address, Order, UserProfile } from '../types';
+import { Address, Order, UserProfile, Product } from '../types';
 import { cn } from '../lib/utils';
 import { AddressForm } from '../components/AddressForm';
 import { Link } from 'react-router-dom';
+import { PRODUCTS } from '../data';
+import { ProductCard } from '../components/ProductCard';
+import { QuickView } from '../components/QuickView';
+import { Toast } from '../components/Toast';
 
 export const Profile: React.FC = () => {
-  const { orders, addresses, addAddress, removeAddress, updateAddress, userProfile, updateUserProfile, logout } = useCart();
-  const [activeTab, setActiveTab] = useState<'orders' | 'addresses' | 'profile'>('orders');
+  const { orders, addresses, addAddress, removeAddress, updateAddress, userProfile, updateUserProfile, logout, wishlist } = useCart();
+  const [activeTab, setActiveTab] = useState<'orders' | 'addresses' | 'profile' | 'wishlist'>('orders');
   const [isAddingAddress, setIsAddingAddress] = useState(false);
   const [editingAddress, setEditingAddress] = useState<Address | null>(null);
   const [isEditingProfile, setIsEditingProfile] = useState(!userProfile);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [showToast, setShowToast] = useState(false);
 
   const [profileForm, setProfileForm] = useState<UserProfile>(userProfile || {
     name: '',
@@ -67,6 +74,12 @@ export const Profile: React.FC = () => {
     setIsEditingProfile(false);
   };
 
+  const wishlistedProducts = useMemo(() => {
+    return wishlist
+      .map(id => PRODUCTS.find(p => p.id === id))
+      .filter((p): p is Product => !!p);
+  }, [wishlist]);
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="mb-12">
@@ -98,6 +111,18 @@ export const Profile: React.FC = () => {
         >
           Addresses
           {activeTab === 'addresses' && (
+            <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-stone-900 dark:bg-white" />
+          )}
+        </button>
+        <button
+          onClick={() => setActiveTab('wishlist')}
+          className={cn(
+            "pb-4 text-sm font-bold uppercase tracking-widest transition-all relative whitespace-nowrap",
+            activeTab === 'wishlist' ? "text-stone-900 dark:text-white" : "text-stone-400 hover:text-stone-600 dark:hover:text-stone-300"
+          )}
+        >
+          Wishlist
+          {activeTab === 'wishlist' && (
             <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-stone-900 dark:bg-white" />
           )}
         </button>
@@ -191,6 +216,35 @@ export const Profile: React.FC = () => {
               <Plus className="w-6 h-6" />
               <span className="text-sm font-bold uppercase tracking-widest">Add New Address</span>
             </button>
+          </motion.div>
+        ) : activeTab === 'wishlist' ? (
+          <motion.div
+            key="wishlist"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="space-y-6"
+          >
+            {wishlistedProducts.length === 0 ? (
+              <div className="text-center py-20 bg-stone-50 dark:bg-stone-900 rounded-3xl">
+                <Heart className="w-12 h-12 text-stone-200 dark:text-stone-700 mx-auto mb-4" />
+                <p className="text-stone-500">Your wishlist is empty.</p>
+                <Link to="/shop" className="text-stone-900 dark:text-white font-bold border-b-2 border-stone-900 dark:border-white mt-4 inline-block">
+                  Browse Shop
+                </Link>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                {wishlistedProducts.map((product) => (
+                  <ProductCard 
+                    key={product.id} 
+                    product={product} 
+                    onAddToCart={() => setShowToast(true)}
+                    onQuickView={(p) => setSelectedProduct(p)}
+                  />
+                ))}
+              </div>
+            )}
           </motion.div>
         ) : (
           <motion.div
@@ -392,6 +446,18 @@ export const Profile: React.FC = () => {
           </>
         )}
       </AnimatePresence>
+
+      <QuickView 
+        product={selectedProduct} 
+        onClose={() => setSelectedProduct(null)} 
+        onAddToCart={() => setShowToast(true)}
+      />
+
+      <Toast 
+        show={showToast} 
+        message="Added to cart" 
+        onClose={() => setShowToast(false)} 
+      />
     </div>
   );
 };

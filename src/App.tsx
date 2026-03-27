@@ -20,6 +20,7 @@ import { Orders } from './pages/Orders';
 import { Auth } from './pages/Auth';
 import { SupportBot } from './components/SupportBot';
 import { CartDrawer } from './components/CartDrawer';
+import { MobileNav } from './components/MobileNav';
 import { useCart } from './CartContext';
 import { motion, AnimatePresence } from 'motion/react';
 import { Navigate, useLocation } from 'react-router-dom';
@@ -39,7 +40,7 @@ export default function App() {
   return (
     <CartProvider>
       <Router>
-        <div className="min-h-screen flex flex-col bg-white dark:bg-stone-950 transition-colors duration-300">
+        <div className="min-h-screen flex flex-col bg-white dark:bg-stone-950 transition-colors duration-300 pb-20 md:pb-0">
           <Navbar />
           <CartDrawer />
           <main className="flex-1">
@@ -72,6 +73,7 @@ export default function App() {
           </main>
           <Footer />
           <SupportBot />
+          <MobileNav />
         </div>
       </Router>
     </CartProvider>

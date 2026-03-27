@@ -1,8 +1,8 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, ShoppingBag, Trash2, Plus, Minus, ArrowRight } from 'lucide-react';
+import { X, ShoppingBag, Trash2, Plus, Minus, ArrowRight, Truck } from 'lucide-react';
 import { useCart } from '../CartContext';
-import { formatPrice } from '../lib/utils';
+import { formatPrice, cn } from '../lib/utils';
 import { Link } from 'react-router-dom';
 
 export const CartDrawer: React.FC = () => {
@@ -46,6 +46,24 @@ export const CartDrawer: React.FC = () => {
             </div>
 
             <div className="flex-1 overflow-y-auto p-6 space-y-6 no-scrollbar">
+              {cart.length > 0 && (
+                <div className="bg-stone-50 dark:bg-stone-800/50 p-4 rounded-2xl mb-4">
+                  <div className="flex justify-between items-center mb-2">
+                    <p className="text-[10px] uppercase tracking-widest font-bold text-stone-500">
+                      {subtotal >= 200 ? 'You qualify for Free Shipping!' : `Add ${formatPrice(200 - subtotal)} more for Free Shipping`}
+                    </p>
+                    <Truck className={cn("w-4 h-4", subtotal >= 200 ? "text-green-500" : "text-stone-300")} />
+                  </div>
+                  <div className="h-1.5 bg-stone-200 dark:bg-stone-700 rounded-full overflow-hidden">
+                    <motion.div 
+                      initial={{ width: 0 }}
+                      animate={{ width: `${Math.min((subtotal / 200) * 100, 100)}%` }}
+                      className={cn("h-full transition-all", subtotal >= 200 ? "bg-green-500" : "bg-stone-900 dark:bg-white")}
+                    />
+                  </div>
+                </div>
+              )}
+
               {cart.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center text-center space-y-4">
                   <div className="w-16 h-16 bg-stone-50 dark:bg-stone-800 rounded-full flex items-center justify-center">
